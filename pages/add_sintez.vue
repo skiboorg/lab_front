@@ -88,6 +88,7 @@ pre {{sintez}}
   Button.mb-5(@click="add('file')" label="Добавить файл" )
   br
   hr
+  p.text-red-500 {{error}}
   Button(@click="save" label="Сохранить" severity="warning")
   p
   Dialog(v-model:visible="firstCardDialog" modal='' header='Главный реактив' :style="{ width: '30vw' }")
@@ -244,7 +245,8 @@ const elements = {
   "Og": 294.21
 }
 import {useAuthStore} from "~/store/auth";
-
+const error = ref(null)
+const { $toast } = useNuxtApp()
 const runtimeConfig = useRuntimeConfig();
 const APIURL = runtimeConfig.public.apiUrl
 const authStore = useAuthStore()
@@ -380,7 +382,7 @@ const add = (target) => {
 
 
 const save = async () => {
-
+  error.value = ''
   let formData = new FormData();
   let temp_date = new Date(sintez.value.start_date).toLocaleDateString().split('.')
   console.log(temp_date)
@@ -410,9 +412,26 @@ const save = async () => {
     body: formData
   }).then((response)=>{
     console.log(response)
-    router.back()
+    if (!response.success){
+      error.value = response.message
+      $toast.add({
+        severity: 'danger',
+        summary: 'Ошибка',
+        detail: 'error',
+        life: 3000
+      });
+    }else {
+      router.back()
+    }
+
   }).catch((error)=>{
     console.log(error)
+    $toast.add({
+      severity: 'danger',
+      summary: 'Ошибка',
+      detail: 'error',
+      life: 3000
+    });
   })
 
 }
